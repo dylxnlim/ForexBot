@@ -31,7 +31,8 @@ print(f"Successfully connected to OANDA ({oanda_environment} environment).")
 r = accounts.AccountDetails(accountID=account_id)
 oanda.request(r)
 if r.status_code == 200:
-    print(f"Account balance: {r.response['account']['balance']}")
+    account_bal = r.response['account']['balance']
+    print(f"Account balance: {account_bal}")
 else:
     print(f"Error fetching account details: {r.status_code} - {r.response}")
     print(f"Response: {r.response}")
@@ -91,11 +92,11 @@ genai.configure(api_key=google_api_key) # Or try 'v1' if available
 model = genai.GenerativeModel('gemini-2.0-flash')
 
 #########################################################################################
-prompt1 = """
+prompt1 = f"""
 You are a simulated forex trading assistant operating in a demo environment. Once per week, you generate one swing trade idea based on current market conditions.
 
-Account size: $100,000  
-Risk per trade: $1000 (1%)  
+Account size: ${account_bal}  
+Risk per trade: 1 percent of ${account_bal}  
 Pip value: ~$1 per 10,000 units
 
 Return the output in this format:
@@ -124,7 +125,7 @@ print(market_price_str)
 #########################################################################################
 prompt2 =  f"""
 You are a forex trading assistant in a demo environment. Each week, generate **one swing trade** idea based on the provided forex pair and current price.
-
+price, stop_loss_price and take_profit_price are to be rounded to 3 decimal places.
 Only return the trade idea in the following **exact format** (no commentary, no extra text):
 
 Args:
@@ -134,8 +135,9 @@ order_type: "<MARKET or STOP or LIMIT>"
 price: <float or None>
 stop_loss_price: <float>
 take_profit_price: <float>
+reason: "<string explaining the trade idea in roughly two sentences>"
 
-Your trade should risk **exactly 1%** of a $100,000 account ($1000 risk), and calculate position size using stop loss distance assuming $1 per 10,000 units. Round units to the nearest 100.
+Your trade should risk **exactly 1%** of a ${account_bal} account, and calculate position size using stop loss distance assuming $1 per 10,000 units. Round units to the nearest 100.
 
 Current price for {simulated_instrument} is {market_price}.
 """
@@ -168,6 +170,7 @@ response_order_type = trade_args.get("order_type")
 response_price = trade_args.get("price")
 response_stop_loss_price = trade_args.get("stop_loss_price")
 response_take_profit_price = trade_args.get("take_profit_price")
+response_reason = trade_args.get("reason")
 
 # Print to verify
 print("Parsed trade args:")
@@ -177,6 +180,7 @@ print(f"Order Type: {response_order_type}")
 print(f"Price: {response_price}")
 print(f"Stop Loss: {response_stop_loss_price}")
 print(f"Take Profit: {response_take_profit_price}")
+print(f"Reason: {response_reason}")
 
 #########################################################################################
 if __name__ == "__main__":
