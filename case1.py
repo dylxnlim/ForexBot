@@ -118,11 +118,13 @@ def get_current_price(instrument):
 simulated_instrument = response1.candidates[0].content.parts[0].text.strip()
 market_price = get_current_price(simulated_instrument)
 market_price_str = f"{market_price:.5f}"
-print(simulated_instrument)
-print(market_price_str)
-
+print(f"The current market price of {simulated_instrument} is {market_price_str}")
 
 #########################################################################################
+trade_risk = float(account_bal)/100
+trade_risk = str(trade_risk)
+print(f"The trade risk is {trade_risk}")
+
 prompt2 =  f"""
 You are a forex trading assistant in a demo environment. Each week, generate **one swing trade** idea based on the provided forex pair and current price.
 price, stop_loss_price and take_profit_price are to be rounded to 3 decimal places.
@@ -137,7 +139,7 @@ stop_loss_price: <float>
 take_profit_price: <float>
 reason: "<string explaining the trade idea in roughly two sentences>"
 
-Your trade should risk **exactly 1%** of a ${account_bal} account, and calculate position size using stop loss distance assuming $1 per 10,000 units. Round units to the nearest 100.
+Your trade should risk ${trade_risk} SGD. Calculate position size using stop loss distance assuming $1 per 10,000 units. Round units to the nearest 100.
 
 Current price for {simulated_instrument} is {market_price}.
 """
