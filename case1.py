@@ -15,7 +15,7 @@ load_dotenv()  # Load environment variables from .env file
 
 account_id = os.environ.get("OANDA_ACCOUNT_ID")
 oanda_api_key = os.environ.get("OANDA_API_KEY")
-oanda_environment = os.environ.get("OANDA_ENVIRONMENT", "practice")
+oanda_environment = os.environ.get("OANDA_ENVIRONMENT")
 
 if not account_id:
     raise EnvironmentError("OANDA_ACCOUNT_ID environment variable not set.")
@@ -100,7 +100,7 @@ Risk per trade: 1 percent of ${account_bal}
 Pip value: ~$1 per 10,000 units
 
 Return the output in this format:
-instrument (str): The instrument to trade (e.g., "EUR_USD").
+<str, The instrument to trade (e.g., "EUR_USD")>
 
 Do not include any extra text.
 """
@@ -139,7 +139,7 @@ stop_loss_price: <float>
 take_profit_price: <float>
 reason: "<string explaining the trade idea in roughly two sentences>"
 
-Your trade should risk ${trade_risk} SGD. Calculate position size using stop loss distance assuming $1 per 10,000 units. Round units to the nearest 100.
+Your trade should risk ${trade_risk} SGD. Calculate position size using stop loss distance assuming $1 per 1000 units. Round units to the nearest 100.
 
 Current price for {simulated_instrument} is {market_price}.
 """
