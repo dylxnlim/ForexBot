@@ -61,19 +61,24 @@ def place_order(instrument, units, order_type, price=None, stop_loss_price=None,
         }
     }
 
-    if price is not None:
-        order_data["order"]["price"] = str(price)
+    # Add timeInForce for MARKET orders specifically
+    if order_type == "MARKET":
+        order_data["order"]["timeInForce"] = "FOK" # Fill Or Kill is common for market orders
+    elif order_type in ["LIMIT", "STOP"]:
+        order_data["order"]["timeInForce"] = "GTC" # Good Till Cancel for pending orders
+        if price is not None:
+            order_data["order"]["price"] = str(round(price, 5)) # Ensure price is a string and rounded
 
-    if stop_loss_price:
+    if stop_loss_price is not None:
         order_data["order"]["stopLossOnFill"] = {
             "timeInForce": "GTC",
-            "price": str(stop_loss_price)
+            "price": str(round(stop_loss_price, 5)) # Ensure price is a string and rounded
         }
 
-    if take_profit_price:
+    if take_profit_price is not None:
         order_data["order"]["takeProfitOnFill"] = {
             "timeInForce": "GTC",
-            "price": str(take_profit_price)
+            "price": str(round(take_profit_price, 5)) # Ensure price is a string and rounded
         }
 
     r = orders.OrderCreate(accountID=account_id, data=order_data)
@@ -86,7 +91,7 @@ def place_order(instrument, units, order_type, price=None, stop_loss_price=None,
         print(f"Error placing {order_type} order:\nStatus Code: {r.status_code}\nResponse: {r.response}")
         return False
 
-######################################################################################
+#########################################################################################
 google_api_key = os.environ.get("GOOGLE_API_KEY")
 genai.configure(api_key=google_api_key) # Or try 'v1' if available
 model = genai.GenerativeModel('gemini-2.0-flash')
@@ -132,7 +137,7 @@ Only return the trade idea in the following **exact format** (no commentary, no 
 
 Args:
 instrument: "{simulated_instrument}"
-units: <int>
+units: <int (The number of units to trade, positive for buy, negative for sell)>
 order_type: "<MARKET or STOP or LIMIT>"
 price: <float or None>
 stop_loss_price: <float>
@@ -161,7 +166,11 @@ for line in response2.text.splitlines():
         elif key == "units":
             trade_args[key] = int(value)
         elif key in ["price", "stop_loss_price", "take_profit_price"]:
-            trade_args[key] = float(value)
+            # Determine rounding based on instrument (e.g., JPY pairs often have 3 decimal places)
+            if 'JPY' in simulated_instrument:
+                trade_args[key] = round(float(value), 3)
+            else:
+                trade_args[key] = round(float(value), 5)
         else:
             trade_args[key] = value
 
